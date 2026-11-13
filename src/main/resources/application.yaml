@@ -1,3 +1,12 @@
 spring:
   application:
     name: JavaSuhaeng
+  jpa:
+    open-in-view: false
+    defer-datasource-initialization: true
+  sql:
+    init:
+      data-locations: classpath:member-data.sql,optional:classpath:data.sql
+
+jwt:
+  secret: ${JWT_SECRET:}
