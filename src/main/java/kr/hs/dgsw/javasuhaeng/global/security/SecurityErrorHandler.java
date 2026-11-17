@@ -1,3 +1,4 @@
+//용인
 package kr.hs.dgsw.javasuhaeng.global.security;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,7 +27,7 @@ public class SecurityErrorHandler implements AuthenticationEntryPoint, AccessDen
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
             throws IOException {
-        response.setHeader("WWW-Authenticate", "Bearer");
+        response.setHeader("WWW-Authenticate", "Basic realm=\"ant\"");
         write(response, ErrorCode.UNAUTHORIZED);
     }
 

@@ -1,3 +1,4 @@
+//용인
 package kr.hs.dgsw.javasuhaeng.domain.domain;
 
 import jakarta.persistence.Column;
@@ -36,21 +37,10 @@ public class Member extends BaseEntity {
     @Column(nullable = false, length = 10)
     private Role role;
 
-    @Column(length = 36)
-    private String tokenId;
-
     public Member(String loginId, String password, String name, Role role) {
         this.loginId = loginId;
         this.password = password;
         this.name = name;
         this.role = role;
-    }
-
-    public void updateToken(String tokenId) {
-        this.tokenId = tokenId;
-    }
-
-    public void logout() {
-        this.tokenId = null;
     }
 }

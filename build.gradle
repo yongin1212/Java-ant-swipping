@@ -20,7 +20,6 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-h2console'
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
@@ -39,6 +38,4 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
-    // 테스트 컨텍스트용 JWT 서명 키 (실제 실행 시에는 환경변수 JWT_SECRET 사용)
-    environment 'JWT_SECRET', 'test-jwt-secret-key-for-gradle-test-only-0123456789'
 }
