@@ -63,4 +63,9 @@ public class MarketEvent extends BaseEntity {
         this.targetSector = targetSector;
         this.changeRate = changeRate;
     }
+
+    public void markApplied() {
+        this.status = "APPLIED";
+        this.appliedAt = LocalDateTime.now();
+    }
 }

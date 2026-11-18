@@ -11,4 +11,5 @@ public interface MarketEventService {
     MarketEventDto create(MarketEventDto dto);
     MarketEventDto update(Long id, MarketEventDto dto);
     void delete(Long id);
+    MarketEventDto apply(Long id);
 }

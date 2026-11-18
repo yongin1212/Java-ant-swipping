@@ -42,4 +42,9 @@ public class MarketEventController {
         eventService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/api/admin/events/{id}/apply")
+    public ApiResponse<MarketEventDto> apply(@PathVariable Long id) {
+        return ApiResponse.ok(eventService.apply(id));
+    }
 }

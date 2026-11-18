@@ -1,3 +1,4 @@
+//용인
 package kr.hs.dgsw.javasuhaeng.domain.domain;
 
 import jakarta.persistence.Column;
@@ -43,5 +44,9 @@ public class Stock extends BaseEntity {
         this.name = name;
         this.sector = sector;
         this.currentPrice = currentPrice;
+    }
+
+    public void changePrice(BigDecimal newPrice) {
+        this.currentPrice = newPrice;
     }
 }

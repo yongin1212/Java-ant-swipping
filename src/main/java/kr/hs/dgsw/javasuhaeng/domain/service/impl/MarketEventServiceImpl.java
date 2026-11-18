@@ -2,9 +2,11 @@
 package kr.hs.dgsw.javasuhaeng.domain.service.impl;
 
 import kr.hs.dgsw.javasuhaeng.domain.domain.MarketEvent;
+import kr.hs.dgsw.javasuhaeng.domain.domain.PriceHistory;
 import kr.hs.dgsw.javasuhaeng.domain.domain.Stock;
 import kr.hs.dgsw.javasuhaeng.domain.dto.MarketEventDto;
 import kr.hs.dgsw.javasuhaeng.domain.repository.MarketEventRepository;
+import kr.hs.dgsw.javasuhaeng.domain.repository.PriceHistoryRepository;
 import kr.hs.dgsw.javasuhaeng.domain.repository.StockRepository;
 import kr.hs.dgsw.javasuhaeng.domain.service.MarketEventService;
 import kr.hs.dgsw.javasuhaeng.global.exception.BusinessException;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +27,7 @@ public class MarketEventServiceImpl implements MarketEventService {
 
     private final MarketEventRepository eventRepository;
     private final StockRepository stockRepository;
+    private final PriceHistoryRepository historyRepository;
 
     @Override
     public List<MarketEventDto> findAll() {
@@ -51,7 +55,7 @@ public class MarketEventServiceImpl implements MarketEventService {
 
     @Override
     public MarketEventDto update(Long id, MarketEventDto dto) {
-        MarketEvent event = findEvent(id);
+        MarketEvent event = findEventForUpdate(id);
         if ("APPLIED".equals(event.getStatus())) {
             throw new BusinessException(ErrorCode.EVENT_ALREADY_APPLIED);
         }
@@ -64,11 +68,54 @@ public class MarketEventServiceImpl implements MarketEventService {
 
     @Override
     public void delete(Long id) {
-        MarketEvent event = findEvent(id);
+        MarketEvent event = findEventForUpdate(id);
         if ("APPLIED".equals(event.getStatus())) {
             throw new BusinessException(ErrorCode.EVENT_ALREADY_APPLIED);
         }
         eventRepository.delete(event);
+    }
+
+    @Override
+    public MarketEventDto apply(Long id) {
+        MarketEvent event = findEventForUpdate(id);
+        if ("APPLIED".equals(event.getStatus())) {
+            throw new BusinessException(ErrorCode.EVENT_ALREADY_APPLIED);
+        }
+
+        List<Stock> stocks = new ArrayList<>();
+        if ("STOCK".equals(event.getTargetType())) {
+            Stock stock = stockRepository.findByIdForUpdate(event.getTargetStock().getId()).orElse(null);
+            if (stock == null) {
+                throw new BusinessException(ErrorCode.STOCK_NOT_FOUND);
+            }
+            stocks.add(stock);
+        } else if ("SECTOR".equals(event.getTargetType())) {
+            stocks = stockRepository.findBySectorForUpdate(event.getTargetSector());
+        } else {
+            stocks = stockRepository.findAllForUpdate();
+        }
+
+        for (Stock stock : stocks) {
+            BigDecimal beforePrice = stock.getCurrentPrice();
+            BigDecimal rate = event.getChangeRate().divide(new BigDecimal("100"));
+            BigDecimal afterPrice = beforePrice.multiply(BigDecimal.ONE.add(rate));
+            afterPrice = afterPrice.setScale(0, RoundingMode.HALF_UP);
+            if (afterPrice.compareTo(BigDecimal.ONE) < 0) {
+                afterPrice = BigDecimal.ONE;
+            }
+            stock.changePrice(afterPrice);
+            historyRepository.save(new PriceHistory(stock, event, beforePrice, afterPrice));
+        }
+        event.markApplied();
+        return MarketEventDto.from(event);
+    }
+
+    private MarketEvent findEventForUpdate(Long id) {
+        MarketEvent event = eventRepository.findByIdForUpdate(id).orElse(null);
+        if (event == null) {
+            throw new BusinessException(ErrorCode.EVENT_NOT_FOUND);
+        }
+        return event;
     }
 
     private MarketEvent findEvent(Long id) {

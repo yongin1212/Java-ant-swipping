@@ -1,6 +1,8 @@
+//용인
 package kr.hs.dgsw.javasuhaeng.domain.controller;
 
 import kr.hs.dgsw.javasuhaeng.domain.domain.Sector;
+import kr.hs.dgsw.javasuhaeng.domain.dto.PriceHistoryDto;
 import kr.hs.dgsw.javasuhaeng.domain.dto.response.StockResponse;
 import kr.hs.dgsw.javasuhaeng.domain.service.StockService;
 import kr.hs.dgsw.javasuhaeng.global.common.ApiResponse;
@@ -30,5 +32,10 @@ public class StockController {
     @GetMapping("/{id}")
     public ApiResponse<StockResponse> getStock(@PathVariable Long id) {
         return ApiResponse.ok(stockService.getStock(id));
+    }
+
+    @GetMapping("/{id}/price-histories")
+    public ApiResponse<List<PriceHistoryDto>> getPriceHistories(@PathVariable Long id) {
+        return ApiResponse.ok(stockService.getPriceHistories(id));
     }
 }
