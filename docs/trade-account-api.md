@@ -145,10 +145,10 @@ GET /api/account/assets
 | `TradeRepository.findAllByAccountIdOrderByTradedAtDescIdDesc` | Query Method + `@EntityGraph` | 거래 내역 최신순 + 종목명 |
 | `AccountRepository.findByMemberId` | Query Method | 내 계좌 조회 |
 
-`TradeConcurrencyTest`에서 잠금을 빼고 돌리면 두 테스트가 모두 실패한다.
+`TradeConcurrencyTest`에서 종목, 계좌 잠금을 빼고 돌리면 두 테스트가 모두 실패한다.
 
 - 동시 매수: 같은 계좌, 종목의 보유 행이 두 번 만들어져 unique 제약 위반
-- 동시 매도: 보유 수량보다 많이 팔림
+- 동시 매도: 3건이 체결됐는데 잔액이 매도 금액만큼 늘지 않음 (동시에 읽은 잔액을 각자 저장해 앞선 변경이 덮어써지는 lost update)
 
 잠금을 넣으면 10개 동시 요청 중 살 수 있는 만큼(5건)만 체결되고 잔액은 0원에서 멈춘다.
 
