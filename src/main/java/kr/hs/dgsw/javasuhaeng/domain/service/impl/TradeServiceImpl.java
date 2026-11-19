@@ -50,6 +50,26 @@ public class TradeServiceImpl implements TradeService {
         return TradeResponse.from(trade);
     }
 
+    @Override
+    public TradeResponse sell(Long memberId, TradeRequest request) {
+        Stock stock = lockStock(request.stockId());
+        Account account = lockAccount(memberId);
+
+        Holding holding = holdingRepository.findByAccountIdAndStockIdForUpdate(account.getId(), stock.getId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.HOLDING_NOT_FOUND));
+        holding.decrease(request.quantity());
+        if (holding.isEmpty()) {
+            holdingRepository.delete(holding);
+        }
+
+        BigDecimal price = stock.getCurrentPrice();
+        BigDecimal totalAmount = price.multiply(BigDecimal.valueOf(request.quantity()));
+        account.deposit(totalAmount);
+
+        Trade trade = tradeRepository.save(new Trade(account, stock, TradeType.SELL, request.quantity(), price));
+        return TradeResponse.from(trade);
+    }
+
     private Stock lockStock(Long stockId) {
         return stockRepository.findByIdForUpdate(stockId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STOCK_NOT_FOUND));

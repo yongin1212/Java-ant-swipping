@@ -6,4 +6,6 @@ import kr.hs.dgsw.javasuhaeng.domain.dto.response.TradeResponse;
 public interface TradeService {
 
     TradeResponse buy(Long memberId, TradeRequest request);
+
+    TradeResponse sell(Long memberId, TradeRequest request);
 }

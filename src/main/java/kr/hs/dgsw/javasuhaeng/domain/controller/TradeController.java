@@ -28,4 +28,12 @@ public class TradeController {
         return ResponseEntity.status(201)
                 .body(ApiResponse.ok(tradeService.buy(loginUser.memberId(), request)));
     }
+
+    @PostMapping("/sell")
+    public ResponseEntity<ApiResponse<TradeResponse>> sell(
+            @AuthenticationPrincipal LoginUser loginUser,
+            @Valid @RequestBody TradeRequest request) {
+        return ResponseEntity.status(201)
+                .body(ApiResponse.ok(tradeService.sell(loginUser.memberId(), request)));
+    }
 }
