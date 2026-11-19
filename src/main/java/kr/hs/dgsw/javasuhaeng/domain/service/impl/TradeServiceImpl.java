@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 // 현금 변경, 보유 수량 변경, 거래 기록 저장은 하나의 트랜잭션. 중간에 실패하면 전체 롤백.
 // 잠금 순서는 이벤트 적용과 맞춰 Stock -> Account -> Holding.
@@ -68,6 +69,16 @@ public class TradeServiceImpl implements TradeService {
 
         Trade trade = tradeRepository.save(new Trade(account, stock, TradeType.SELL, request.quantity(), price));
         return TradeResponse.from(trade);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TradeResponse> getTrades(Long memberId) {
+        Account account = accountRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ACCOUNT_NOT_FOUND));
+        return tradeRepository.findAllByAccountIdOrderByTradedAtDescIdDesc(account.getId()).stream()
+                .map(TradeResponse::from)
+                .toList();
     }
 
     private Stock lockStock(Long stockId) {
