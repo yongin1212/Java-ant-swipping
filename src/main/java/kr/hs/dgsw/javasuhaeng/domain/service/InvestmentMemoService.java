@@ -10,7 +10,7 @@ public interface InvestmentMemoService {
 
     InvestmentMemoResponse create(Long memberId, InvestmentMemoCreateRequest request);
 
-    List<InvestmentMemoResponse> findAll(Long memberId);
+    List<InvestmentMemoResponse> findAll(Long memberId, String keyword, Long stockId);
 
     InvestmentMemoResponse findById(Long memberId, Long id);
 

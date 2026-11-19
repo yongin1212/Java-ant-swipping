@@ -31,8 +31,10 @@ public class InvestmentMemoController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<InvestmentMemoResponse>>> findAll(
-            @AuthenticationPrincipal LoginUser loginUser) {
-        List<InvestmentMemoResponse> response = investmentMemoService.findAll(loginUser.memberId());
+            @AuthenticationPrincipal LoginUser loginUser,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long stockId) {
+        List<InvestmentMemoResponse> response = investmentMemoService.findAll(loginUser.memberId(), keyword, stockId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 

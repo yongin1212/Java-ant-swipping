@@ -45,8 +45,8 @@ public class InvestmentMemoServiceImpl implements InvestmentMemoService {
     }
 
     @Override
-    public List<InvestmentMemoResponse> findAll(Long memberId) {
-        List<InvestmentMemo> memos = investmentMemoRepository.findAllByMemberId(memberId);
+    public List<InvestmentMemoResponse> findAll(Long memberId, String keyword, Long stockId) {
+        List<InvestmentMemo> memos = investmentMemoRepository.search(memberId, keyword, stockId);
         return memos.stream()
                 .map(memo -> InvestmentMemoResponse.from(memo))
                 .toList();
