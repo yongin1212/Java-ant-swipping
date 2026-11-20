@@ -1,0 +1,120 @@
+@baseUrl = http://localhost:8080
+@username = user1
+@password = password
+
+### 인증 확인
+GET {{baseUrl}}/api/auth/me
+Authorization: Basic {{username}} {{password}}
+
+### 초기 계좌 확인
+GET {{baseUrl}}/api/account
+Authorization: Basic {{username}} {{password}}
+
+### 종목 목록을 저장한다.
+< {%
+    client.global.clear("aStocks");
+    client.global.clear("aStockId");
+    client.global.clear("aWatchlistId");
+    client.global.clear("aMemoId");
+%}
+GET {{baseUrl}}/api/stocks
+Authorization: Basic {{username}} {{password}}
+
+> {%
+    client.assert(response.status === 200, "계정과 서버 주소를 확인하세요.");
+    client.global.set("aStocks", JSON.stringify(response.body.data));
+%}
+
+### 1. 관심종목 목록에서 아직 등록하지 않은 종목을 찾는다.
+< {% client.global.clear("aStockId"); %}
+GET {{baseUrl}}/api/watchlist
+Authorization: Basic {{username}} {{password}}
+
+> {%
+    client.assert(response.status === 200);
+    const stocks = JSON.parse(client.global.get("aStocks"));
+    const stock = stocks.find(candidate =>
+        !response.body.data.some(item => item.stockId === candidate.id));
+    client.assert(stock !== undefined, "모든 종목이 등록돼 있습니다. 다른 데모 계정으로 실행하세요.");
+    client.global.set("aStockId", String(stock.id));
+%}
+
+### 2. 관심종목 등록 (201), 생성된 ID를 저장한다.
+< {% client.global.clear("aWatchlistId"); %}
+POST {{baseUrl}}/api/watchlist
+Authorization: Basic {{username}} {{password}}
+Content-Type: application/json
+
+{
+  "stockId": {{aStockId}},
+  "targetPrice": 12000
+}
+
+> {%
+    client.assert(response.status === 201);
+    client.global.set("aWatchlistId", String(response.body.data.id));
+%}
+
+### 3. 목표 가격 수정 (200)
+PUT {{baseUrl}}/api/watchlist/{{aWatchlistId}}
+Authorization: Basic {{username}} {{password}}
+Content-Type: application/json
+
+{
+  "targetPrice": 15000
+}
+
+### 4. 메모 등록 (201), 생성된 ID를 저장한다.
+< {% client.global.clear("aMemoId"); %}
+POST {{baseUrl}}/api/memos
+Authorization: Basic {{username}} {{password}}
+Content-Type: application/json
+
+{
+  "stockId": {{aStockId}},
+  "title": "HTTP 투자 메모",
+  "content": "이벤트 적용 전후의 종목 가격을 비교한다."
+}
+
+> {%
+    client.assert(response.status === 201);
+    client.global.set("aMemoId", String(response.body.data.id));
+%}
+
+### 5. 메모 목록 조회 (200)
+GET {{baseUrl}}/api/memos
+Authorization: Basic {{username}} {{password}}
+
+### 메모 검색: 제목 검색어와 종목 ID를 함께 사용한다. (200)
+GET {{baseUrl}}/api/memos?keyword=HTTP&stockId={{aStockId}}
+Authorization: Basic {{username}} {{password}}
+
+### 6. 메모 한 건 조회 (200)
+GET {{baseUrl}}/api/memos/{{aMemoId}}
+Authorization: Basic {{username}} {{password}}
+
+### 7. 메모 수정 (200)
+PUT {{baseUrl}}/api/memos/{{aMemoId}}
+Authorization: Basic {{username}} {{password}}
+Content-Type: application/json
+
+{
+  "title": "HTTP 투자 메모 수정",
+  "content": "이벤트 적용 후의 가격을 확인했다."
+}
+
+### 8. 예제로 만든 메모 삭제 (204, 응답 본문 없음)
+DELETE {{baseUrl}}/api/memos/{{aMemoId}}
+Authorization: Basic {{username}} {{password}}
+
+> {%
+    if (response.status === 204) client.global.clear("aMemoId");
+%}
+
+### 9. 예제로 만든 관심종목 삭제 (204, 응답 본문 없음)
+DELETE {{baseUrl}}/api/watchlist/{{aWatchlistId}}
+Authorization: Basic {{username}} {{password}}
+
+> {%
+    if (response.status === 204) client.global.clear("aWatchlistId");
+%}

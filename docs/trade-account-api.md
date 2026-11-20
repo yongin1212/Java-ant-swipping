@@ -163,4 +163,4 @@ GET /api/account/assets
 
 ## 초기 데이터
 
-`src/main/resources/account-data.sql`: 회원마다 초기 투자금 10,000,000원 계좌를 만든다. `member-data.sql` 다음에 실행되어야 한다.
+[`data.sql`](../src/main/resources/data.sql)에서 회원을 먼저 등록하고 각 회원의 계좌를 초기 투자금 10,000,000원으로 만든다.

@@ -6,4 +6,4 @@ spring:
     defer-datasource-initialization: true
   sql:
     init:
-      data-locations: classpath:member-data.sql,classpath:stock-data.sql,optional:classpath:data.sql
+      data-locations: classpath:data.sql
