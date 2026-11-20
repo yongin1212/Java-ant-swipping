@@ -145,22 +145,21 @@ GET /api/account/assets
 | `TradeRepository.findAllByAccountIdOrderByTradedAtDescIdDesc` | Query Method + `@EntityGraph` | 거래 내역 최신순 + 종목명 |
 | `AccountRepository.findByMemberId` | Query Method | 내 계좌 조회 |
 
-`TradeConcurrencyTest`에서 종목, 계좌 잠금을 빼고 돌리면 두 테스트가 모두 실패한다.
-
-- 동시 매수: 같은 계좌, 종목의 보유 행이 두 번 만들어져 unique 제약 위반
-- 동시 매도: 3건이 체결됐는데 잔액이 매도 금액만큼 늘지 않음 (동시에 읽은 잔액을 각자 저장해 앞선 변경이 덮어써지는 lost update)
-
-잠금을 넣으면 10개 동시 요청 중 살 수 있는 만큼(5건)만 체결되고 잔액은 0원에서 멈춘다.
-
 ## 테스트
 
-| 클래스 | 종류 | 내용 |
-|---|---|---|
-| `TradeServiceTest` | Service | 매수 성공, 누적 매수, 잔액 부족, 없는 종목, 매도 성공, 전량 매도, 수량 부족, 미보유, 거래 내역 최신순 |
-| `AccountServiceTest` | Service | 시세 변경 후 총자산, 손익, 수익률, 손실 반올림, 보유 주식, 계좌 없음 |
-| `TradeRollbackTest` | `@SpringBootTest` | 거래 기록 저장 실패 시 현금, 보유 수량 롤백 |
-| `TradeConcurrencyTest` | `@SpringBootTest` | 동시 매수, 동시 매도에서 음수 방지 |
-| `TradeControllerTest` | MockMvc | 201, 400, 404, 401 응답과 조회 API |
+`@SpringBootTest` + `@Transactional`로 실제 Service와 H2 DB를 사용하고, 테스트가 끝나면 데이터가 되돌아간다.
+
+| 클래스 | 종류 | 테스트 | 정상/예외 |
+|---|---|---|---|
+| `TradeControllerTest` | Controller (MockMvc) | 매수 성공 201 | 정상 |
+| | | 수량 0 매수 400 `INVALID_INPUT` | 예외 |
+| | | 로그인 없이 매수 401 | 예외 |
+| `TradeServiceTest` | Service (JUnit, AssertJ) | 매수 성공, 현금 감소 | 정상 |
+| | | 현금 부족 매수 `INSUFFICIENT_CASH` | 예외 |
+| | | 매도 성공, 현금 증가 | 정상 |
+| | | 보유 수량 초과 매도 `INSUFFICIENT_QUANTITY` | 예외 |
+| `AccountServiceTest` | Service (JUnit, AssertJ) | 주가 상승 후 총자산, 손익, 수익률 | 정상 |
+| | | 계좌 없는 회원 조회 `ACCOUNT_NOT_FOUND` | 예외 |
 
 ## 초기 데이터
 
