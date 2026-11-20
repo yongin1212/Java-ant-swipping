@@ -28,22 +28,7 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public List<StockResponse> getStocks(String name, Sector sector) {
-        if (name != null) {
-            name = name.trim();
-        }
-        boolean hasName = name != null && !name.isEmpty();
-        List<Stock> stocks;
-
-        if (hasName && sector != null) {
-            stocks = stockRepository.findByNameContainingIgnoreCaseAndSectorOrderByIdAsc(name, sector);
-        } else if (hasName) {
-            stocks = stockRepository.findByNameContainingIgnoreCaseOrderByIdAsc(name);
-        } else if (sector != null) {
-            stocks = stockRepository.findBySectorOrderByIdAsc(sector);
-        } else {
-            stocks = stockRepository.findAllByOrderByIdAsc();
-        }
-
+        List<Stock> stocks = stockRepository.search(name, sector);
         List<StockResponse> responses = new ArrayList<>();
         for (Stock stock : stocks) {
             responses.add(StockResponse.from(stock));

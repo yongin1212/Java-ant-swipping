@@ -12,11 +12,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface StockRepository extends JpaRepository<Stock, Long> {
-    List<Stock> findAllByOrderByIdAsc();
-    List<Stock> findByNameContainingIgnoreCaseOrderByIdAsc(String name);
-    List<Stock> findBySectorOrderByIdAsc(Sector sector);
-    List<Stock> findByNameContainingIgnoreCaseAndSectorOrderByIdAsc(String name, Sector sector);
+public interface StockRepository extends JpaRepository<Stock, Long>, StockRepositoryCustom {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Stock s WHERE s.id = :id")
